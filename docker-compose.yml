@@ -34,11 +34,8 @@ services:
         max-size: "10m"
         max-file: "3"
     restart: unless-stopped
-# Optional if you later add other services and want startup ordering
-# depends_on:
-#   - some-service
 
 networks:
-  dummy-network:
+  dhis-network:
     external: 
       name: dhis-network
