@@ -7,8 +7,8 @@ services:
     env_file: .env
     ports:
       - "3213:3000"
-    volumes:
-      # - ./secrets/private_key:/run/secrets/private_key:ro
+    # volumes:
+    #   - ./secrets/private_key:/run/secrets/private_key:ro
     environment:
       PRIVATE_KEY_PATH: /run/secrets/private_key
     # Optional if not in .env:
