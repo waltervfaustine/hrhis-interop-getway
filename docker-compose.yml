@@ -41,5 +41,5 @@ services:
 
 networks:
   dummy-network:
-    external: true
-    name: dhis-network
+    external: 
+      name: dhis-network
