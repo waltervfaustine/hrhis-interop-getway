@@ -34,5 +34,5 @@ services:
 
 networks:
   dhis-network:
-    external: true
-    name: dhis-network
+    external:
+      name: dhis-network
