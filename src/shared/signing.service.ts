@@ -27,20 +27,22 @@ import { resolve } from 'path';
 import { createPrivateKey, KeyObject } from 'crypto';
 
 function loadPem(): string {
-  const path = process.env.PRIVATE_KEY_PATH;
-  if (path) {
-    const full = resolve(path);
+  // Prefer file (Docker secret mount)
+  const p = process.env.PRIVATE_KEY_PATH;
+  if (p) {
+    const full = resolve(p);
     if (!existsSync(full))
       throw new Error(`PRIVATE_KEY_PATH not found: ${full}`);
     return readFileSync(full, 'utf8').trim();
   }
+  // Fallback: inline env (escape newlines as \n)
   const raw = process.env.PRIVATE_KEY_PEM || '';
   if (!raw) throw new Error('Missing PRIVATE_KEY_PATH or PRIVATE_KEY_PEM');
   return (raw.includes('\\n') ? raw.replace(/\\n/g, '\n') : raw).trim();
 }
 
 function toKeyObject(pem: string): KeyObject {
-  // Node will parse PKCS#1 ("BEGIN RSA PRIVATE KEY") or PKCS#8 ("BEGIN PRIVATE KEY")
+  // Node parses both PKCS#1 & PKCS#8. No jose import* calls needed.
   return createPrivateKey(pem);
 }
 
@@ -55,8 +57,8 @@ export class SigningService {
       .setProtectedHeader({ alg: 'RS256', typ: 'JWT' })
       .setIssuedAt(now)
       .setExpirationTime(now + 60)
-      .setIssuer('interop-gateway')
+      .setIssuer('hrhis-interop-gateway')
       .setSubject(subject)
-      .sign(key); // jose accepts Node KeyObject
+      .sign(key); // jose accepts a Node KeyObject
   }
 }
