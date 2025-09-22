@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -29,8 +30,8 @@
 // src/shared/external.service.ts
 import { Injectable } from '@nestjs/common';
 import { externalClient } from './http';
-import { AxiosError } from 'axios';
 import { buildExternalAuth } from './external-auth';
+import { AxiosError } from 'axios';
 
 @Injectable()
 export class ExternalService {
@@ -40,31 +41,29 @@ export class ExternalService {
     meta: { jws: string; user: string; ts: string; reqId: string },
   ) {
     const auth = await buildExternalAuth(path);
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-Request-Id': meta.reqId,
-      'X-Timestamp': meta.ts,
-      'X-DHIS2-User': meta.user,
-      'X-Payload-Signature': meta.jws,
-      ...auth.headers,
-    };
+
+    console.log("REACHED SUCCESSFULLY");
 
     try {
       const res = await externalClient.post(path, payload, {
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Request-Id': meta.reqId,
+          'X-Timestamp': meta.ts,
+          'X-DHIS2-User': meta.user,
+          'X-Payload-Signature': meta.jws,
+          ...auth.headers,
+        },
         params: auth.query,
-        // Let us inspect non-2xx instead of throwing
-        validateStatus: () => true,
+        validateStatus: () => true, // don't throw on 4xx/5xx
       });
-
-      // Pass through the upstream status and body
       return { status: res.status, data: res.data };
     } catch (e) {
       const err = e as AxiosError;
-      const status = err.response?.status ?? 502;
-      const data = err.response?.data ?? { error: err.message };
-      // Re-throw in your controller as HttpException(status, data) or return shape your app expects
-      return { status, data };
+      return {
+        status: err.response?.status ?? 502,
+        data: err.response?.data ?? { error: err.message },
+      };
     }
   }
 }
