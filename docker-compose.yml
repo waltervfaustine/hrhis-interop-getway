@@ -6,11 +6,12 @@ services:
     image: hrhis-interop-gateway:latest
     env_file: .env
     ports:
-      - "3213:3213"
+      - "3213:3000"                 # host 3213 -> container 3000  ✅
     volumes:
       - ./secrets/private_key:/run/secrets/private_key:ro
     environment:
-      PRIVATE_KEY_PATH: /run/secrets/private_key   # <-- path, not PEM text
+      PORT: "3000"                  # be explicit so healthcheck matches
+      PRIVATE_KEY_PATH: /run/secrets/private_key
     read_only: true
     tmpfs:
       - /tmp
@@ -20,8 +21,9 @@ services:
       - ALL
     networks:
       - dhis-network
+    # Healthcheck that works on alpine (no bash needed)
     healthcheck:
-      test: ["CMD-SHELL", "p=${PORT:-3000}; bash -c 'echo > /dev/tcp/127.0.0.1/$p' >/dev/null 2>&1"]
+      test: ["CMD-SHELL", "node -e \"const p=process.env.PORT||3000; require('http').get(`http://127.0.0.1:${p}/health`,r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\""]
       interval: 30s
       timeout: 5s
       retries: 3
