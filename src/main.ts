@@ -6,11 +6,11 @@ import { NestFactory } from '@nestjs/core';
 import { json, text } from 'express';
 import helmet from 'helmet';
 import pino from 'pino-http';
-import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
+import { ChwModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create(ChwModule, { bufferLogs: true });
 
   // Safer defaults without blocking typical requests
   app.use(
